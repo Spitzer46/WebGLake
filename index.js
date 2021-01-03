@@ -4,23 +4,40 @@ import WaterMesh from "./water/WaterMesh.js";
 import BoxMesh from "./cube/BoxMesh.js";
 import { SkyboxMesh } from "./skybox/SkyboxMesh.js";
 import FrameBuffer from "./FrameBuffer.js";
+import loadObj from "./util/loadObj.js";
+import MeshLoaded from "./mesh/MeshLoaded.js";
+import * as mat4 from "./lib/mat4.js";
 
 const gl = Display.init({ alpha:false, antialias:false });
 gl.clearColor(0.95, 0.95, 0.95, 1.0);
 gl.enable(gl.DEPTH_TEST);
-gl.cullFace(gl.BACK);
+gl.enable(gl.CULL_FACE);
 
 const reflectionFrameBuffer = new FrameBuffer(gl);
 const firstPass = [];
 const secondPass = [];
-const camera = new Camera({ near:0.01, zoomFactor:0.00025, zoom:5 });
+const camera = new Camera({ near:1, far:2000, zoomFactor:0.005, zoom:50 });
 
 const skyBox = new SkyboxMesh(gl);
 const water = new WaterMesh(gl);
 const box = new BoxMesh(gl);
+// const palm = new MeshLoaded(
+//   gl, 
+//   "../model/Coconut_palm/coconut_palm.obj", 
+//   "../model/Coconut_palm/palm_stem_palm_stem_BaseColor.png", 
+//   "../model/Coconut_palm/palm_stem_palm_stem_Normal.png");
+  
+// mat4.fromTranslation(palm.model, [0, 10, -20]);
+const dune = new MeshLoaded(
+  gl,
+  "../model/Desert/dune.obj",
+  "../model/Desert/desert.png",
+  "../model/Desert/desert_normal.png");
+mat4.fromTranslation(dune.model, [0, -2, 0]);
+mat4.scale(dune.model, dune.model, [80, 80, 80]);
 reflectionFrameBuffer.attachement(water.reflectionTexture);
-firstPass.push(skyBox, box);
-secondPass.push(skyBox, box, water);
+firstPass.push(skyBox, dune);
+secondPass.push(skyBox, dune, water);
 
 let prevTimestamp = performance.now();
 let nextTimeFps = performance.now();
@@ -47,7 +64,7 @@ function animate(timestamp) {
   camera.update(Display.width, Display.height);
   for(const mesh of firstPass) {
     if(mesh.ready) {
-      mesh.render(camera);
+      mesh.render(camera, 0);
     }
   }
   reflectionFrameBuffer.unbind();
@@ -58,7 +75,7 @@ function animate(timestamp) {
   for(const mesh of secondPass) {
     if(mesh.ready) {
       mesh.update(ellapsed);
-      mesh.render(camera);
+      mesh.render(camera, 2);
     }
   }
 }

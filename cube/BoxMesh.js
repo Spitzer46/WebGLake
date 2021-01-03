@@ -14,8 +14,8 @@ export default class BoxMesh {
         this.texture = Texture.load(gl, "../img/albedo.png");
         this.normalMap = Texture.load(gl, "../img/albedo_normal.png");
         this.elements = new Element(gl);
-        this.model = mat4.fromTranslation(mat4.create(), [0, 2, 0]);
-        mat4.scale(this.model, this.model, [2, 2, 2]);
+        this.model = mat4.fromTranslation(mat4.create(), [10, 5, 10]);
+        mat4.scale(this.model, this.model, [3, 3, 3]);
         // Start shader loading
         Shader.fromScripts(gl, "./cube/shader.vert", "./cube/shader.frag").then(shader => {
             ///////// init ////////
@@ -116,7 +116,6 @@ export default class BoxMesh {
                 22, 23, 21
             ]);
             const [ tangents, bitangents ] = computeTangent(element, vertices, uv);
-            console.log(tangents, bitangents);
             this.attributes.position.set(vertices);
             this.attributes.uv.set(uv);
             this.attributes.normal.set(normal);

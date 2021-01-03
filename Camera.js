@@ -1,6 +1,9 @@
 import * as mat4 from "./lib/mat4.js";
 import * as vec3 from "./lib/vec3.js";
 
+const Button = { LEFT:0, MIDDLE:1, RIGHT:2 };
+const Mode = { NONE:0, ROTATION:1, TRANSLATION:2 };
+
 export default class Camera {
     constructor(config = {}) {
         this.fov = config.fov || 45;
@@ -13,11 +16,20 @@ export default class Camera {
         this.motionlessViewMatrix = mat4.create();
         this.vec3 = vec3.create();
         this.origin = vec3.create();
-        vec3.set(this.origin, 0, 1, 0);
+        vec3.set(this.origin, 0, 8, 0);
+        // vec3.set(this.origin, 10, 3, 10);
 
         this.factor = config.factor === undefined ? 0.1 : config.factor;
         this.zoomFactor = config.zoomFactor || 0.001;
         this.startYRot = config.startYRot || 0;
+
+        this.mode = Mode.NONE;
+        this.dtx = 0;
+        this.dty = 0;
+        this.ptx = 0;
+        this.pty = 0;
+        this.etx = 0;
+        this.ety = 0;
 
         this.dx = 0;
         this.dy = 0;
@@ -40,6 +52,7 @@ export default class Camera {
         window.addEventListener("mousewheel", this.onMouseWheel);
         window.addEventListener("mousedown", this.onPress);
         window.addEventListener("mouseup", this.onRelease);
+        window.addEventListener("contextmenu", e => e.preventDefault());
     }
 
     computeViewMatrix() {
@@ -79,11 +92,19 @@ export default class Camera {
         this.mx = e.clientX * dpr;
         this.my = -e.clientY * dpr;
         if(this.press) {
-            this.dx += this.mx - this.px;
-            this.dy += this.my - this.py;
+            if(this.mode === Mode.ROTATION) {
+                this.dx += this.mx - this.px;
+                this.dy += this.my - this.py;
+            }
+            else if(this.mode === Mode.TRANSLATION) {
+                this.dtx += this.mx - this.ptx;
+                this.dty += this.my - this.pty;
+            }
         }
         this.px = this.mx;
         this.py = this.my;
+        this.ptx = this.mx;
+        this.pty = this.my;
     }
 
     onMouseWheel(e) {
@@ -91,7 +112,17 @@ export default class Camera {
     }
 
     onPress(e) {
-        this.press = true;
+        switch(e.button) {
+            case Button.LEFT: 
+                this.mode = Mode.ROTATION; 
+                this.press = true;
+                break;
+            case Button.RIGHT: 
+                this.mode = Mode.TRANSLATION; 
+                this.press = true;
+                break;
+            default:
+        }
     }
 
     onRelease(e) {
@@ -101,25 +132,29 @@ export default class Camera {
     update(width, height) {
         const halfWidth = width / 2;
         const halfHeight = height / 2;
+        // Rotation
         this.ex += (this.dx - this.ex) * this.factor;
         this.ey += (this.dy - this.ey) * this.factor;
-        let rx = (this.ex - halfWidth) / (width / 3);
-        let ry = (this.ey - halfHeight) / (height / 3);
+        const rx = (this.ex - halfWidth) / (width / 3);
+        const ry = (this.ey - halfHeight) / (height / 3);
+        // Translation
+        this.etx += (this.dtx - this.etx) * this.factor;
+        this.ety += (this.dty - this.ety) * this.factor;
+        const tx = (this.etx - halfWidth) / (width / 50);
+        const ty = (this.ety - halfHeight) / (height / 50);
+        vec3.set(this.origin, tx, 0, ty);
+
         mat4.identity(this.modelMatrix);
         mat4.translate(this.modelMatrix, this.modelMatrix, this.origin);
         mat4.rotateY(this.modelMatrix, this.modelMatrix, rx - Math.PI * 1.55);
         mat4.rotateX(this.modelMatrix, this.modelMatrix, ry - Math.PI * 1.7);
-        this.vec3[0] = 0;
-        this.vec3[1] = 0;
-        this.vec3[2] = this.zoom;
+        vec3.set(this.vec3, 0, 0, this.zoom);
         mat4.translate(this.modelMatrix, this.modelMatrix, this.vec3);
         // Update matrix
         this.computeViewMatrix();
         // Reflective
         if(this.reflective) {
-            this.vec3[0] = 1;
-            this.vec3[1] = -1;
-            this.vec3[2] = 1;
+            vec3.set(this.vec3, 1, -1, 1);
             mat4.scale(this.viewMatrix, this.viewMatrix, this.vec3);
         }
     }

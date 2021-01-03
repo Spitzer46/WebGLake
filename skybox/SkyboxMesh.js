@@ -12,73 +12,75 @@ export class SkyboxMesh {
         this.uniforms = null;
         this.attributes = null;
         this.elements = new Element(gl);
-        this.model = mat4.create();
+        this.model = mat4.fromTranslation(mat4.create(), [0, -500, 0]);
         this.textureCube = new TextureCubeMap(gl);
         // Start shader loading
-        Shader.fromScripts(gl, "./skybox/shader.vert", "./skybox/shader.frag").then(shader => {
-            ///////// init ////////
-            this.shader = shader;
-            this.uniforms = shader.uniforms;
-            this.attributes = shader.generateAttributes();
-            //////// build ////////
-            const s = 4000;
-            this.attributes.position.set(new Float32Array([
-                s, s, s,
-                s, s,-s,
-                s,-s, s,
-                s,-s,-s,
-               -s, s,-s,
-               -s, s, s,
-               -s,-s,-s,
-               -s,-s, s,
-               -s, s,-s,
-                s, s,-s,
-               -s, s, s,
-                s, s, s,
-               -s,-s, s,
-                s,-s, s,
-               -s,-s,-s,
-                s,-s,-s,
-               -s, s, s,
-                s, s, s,
-               -s,-s, s,
-                s,-s, s,
-                s, s,-s,
-               -s, s,-s,
-                s,-s,-s,
-               -s,-s,-s
-            ]));
-            /////// element ///////
-            this.elements.set(new Uint16Array([
-                0, 2, 1,
-                2, 3, 1,
-                4, 6, 5,
-                6, 7, 5,
-                8, 10, 9,
-                10, 11, 9,
-                12, 14, 13,
-                14, 15, 13,
-                16, 18, 17,
-                18, 19, 17,
-                20, 22, 21,
-                22, 23, 21
-            ]));
-            /////// ready /////////
-            this.ready = true;
-        });
-        // Start load images
+        this.loading();
+    }
+
+    async loading() {
+        const gl = this.gl;
+        ///////// init ////////
+        this.shader = await Shader.fromScripts(gl, "./skybox/shader.vert", "./skybox/shader.frag");
+        this.uniforms = this.shader.uniforms;
+        this.attributes = this.shader.generateAttributes();
+        //////// build ////////
+        const s = 1200;
+        this.attributes.position.set(new Float32Array([
+            s, s, s,
+            s, s,-s,
+            s,-s, s,
+            s,-s,-s,
+           -s, s,-s,
+           -s, s, s,
+           -s,-s,-s,
+           -s,-s, s,
+           -s, s,-s,
+            s, s,-s,
+           -s, s, s,
+            s, s, s,
+           -s,-s, s,
+            s,-s, s,
+           -s,-s,-s,
+            s,-s,-s,
+           -s, s, s,
+            s, s, s,
+           -s,-s, s,
+            s,-s, s,
+            s, s,-s,
+           -s, s,-s,
+            s,-s,-s,
+           -s,-s,-s
+        ]));
+        /////// element ///////
+        this.elements.set(new Uint16Array([
+            0, 2, 1,
+            2, 3, 1,
+            4, 6, 5,
+            6, 7, 5,
+            8, 10, 9,
+            10, 11, 9,
+            12, 14, 13,
+            14, 15, 13,
+            16, 18, 17,
+            18, 19, 17,
+            20, 22, 21,
+            22, 23, 21
+        ]));
+        /////// ready /////////
+        this.ready = true;
+        // Start image loadings
         const promiseImages = [];
-        promiseImages.push(loadImage("../img/skybox/front.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Z));
-        promiseImages.push(loadImage("../img/skybox/back.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z));
-        promiseImages.push(loadImage("../img/skybox/right.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_X));
-        promiseImages.push(loadImage("../img/skybox/left.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_X));
-        promiseImages.push(loadImage("../img/skybox/top.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Y));
-        promiseImages.push(loadImage("../img/skybox/bottom.jpg", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y));
-        Promise.all(promiseImages).then(imagesLoaded => {
-            this.textureCube.set(imagesLoaded.map(il => { 
-                return { target:il.args[0], data:il.img }
-            }));
-        });
+        promiseImages.push(loadImage("../img/daylight/front.bmp", gl.TEXTURE_CUBE_MAP_POSITIVE_Z));
+        promiseImages.push(loadImage("../img/daylight/back.bmp", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z));
+        promiseImages.push(loadImage("../img/daylight/right.bmp", gl.TEXTURE_CUBE_MAP_POSITIVE_X));
+        promiseImages.push(loadImage("../img/daylight/left.bmp", gl.TEXTURE_CUBE_MAP_NEGATIVE_X));
+        promiseImages.push(loadImage("../img/daylight/top.bmp", gl.TEXTURE_CUBE_MAP_POSITIVE_Y));
+        promiseImages.push(loadImage("../img/daylight/bottom.bmp", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y));
+        const imagesLoaded = await Promise.all(promiseImages);
+        this.textureCube.set(imagesLoaded.map(il => {
+            return { target:il.args[0], data:il.img }
+        }));
     }
 
     enable(state = true) {
@@ -95,7 +97,14 @@ export class SkyboxMesh {
         }
     }
     
-    render(camera) {
+    render(camera, pass) {
+        const gl = this.gl;
+        if(pass === 2) {
+            gl.cullFace(gl.FRONT);
+        }
+        else {
+            gl.cullFace(gl.BACK);
+        }
         this.enable(true);
         camera.loadProjectionMatrix(this.uniforms.projection);
         camera.loadViewMatrix(this.uniforms.view, false);
@@ -105,7 +114,9 @@ export class SkyboxMesh {
         this.enable(false);
     }
 
-    update(ellapsed) {}
+    update(ellapsed) {
+        mat4.rotateY(this.model, this.model, ellapsed * 0.000015);
+    }
 
     dispose() {
         this.shader.dispose();

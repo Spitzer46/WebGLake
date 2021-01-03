@@ -14,10 +14,11 @@ varying vec2 vTexCoord;
 varying vec3 vSurfaceToLight;
 varying vec3 vSurfaceToCamera;
 
-const float waveStrength = 0.005;
+const float waveStrength = 0.04;
 const float shineDamper = 20.0;
-const float reflectivity = 0.6;
+const float reflectivity = 0.5;
 const vec3 lightColor = vec3(1.0);
+const vec3 oceanColor = vec3(0.113, 0.199, 0.289);
 
 void main() {
     vec2 refractTexCoords = (vClipSpaceReal.xy / vClipSpaceReal.w) / 2.0 + 0.5;
@@ -28,6 +29,7 @@ void main() {
     totalDistortionCoords *= waveStrength;
 
     refractTexCoords += totalDistortionCoords;
+    refractTexCoords = clamp(refractTexCoords, 0.001, 0.999);
 
     vec3 surfaceToLight = normalize(vSurfaceToLight);
     vec3 surfaceToCamera = normalize(vSurfaceToCamera);
@@ -41,5 +43,6 @@ void main() {
     specular = pow(specular, shineDamper);
     vec3 specularHightlights = lightColor * specular * reflectivity;
 
-    gl_FragColor = texture2D(reflectionTexture, refractTexCoords) + vec4(specularHightlights, 0.0);
+    float refractiveFactor = dot(surfaceToCamera, vec3(0.0, 1.0, 0.0));
+    gl_FragColor = mix(texture2D(reflectionTexture, refractTexCoords), vec4(oceanColor, 1.0), refractiveFactor) + vec4(specularHightlights, 0.0);
 }

@@ -9,6 +9,7 @@ export default {
       this.resized = false;
       this.resize();
       window.addEventListener("resize", this.resize.bind(this));
+      this.gl.shaderUsed = null;
       return this.gl;
     },
     resize() {

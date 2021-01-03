@@ -12,32 +12,34 @@ export default class WaterMesh {
         this.color = null;
         this.reflectionTexture = new Texture(gl, { width:1024, height:1024 });
         this.dudvTexture = Texture.load(gl, "../img/waterdudv.png", { wraps:gl.REPEAT, wrapt:gl.REPEAT });
-        this.normalTexture = Texture.load(gl, "../img/waternormal.jpg", { wraps:gl.REPEAT, wrapt:gl.REPEAT });
-        this.model = mat4.fromScaling(mat4.create(), [500, 500, 500]);
+        this.normalTexture = Texture.load(gl, "../img/waternormal.png", { wraps:gl.REPEAT, wrapt:gl.REPEAT });
+        this.model = mat4.fromScaling(mat4.create(), [160, 160, 160]);
         this.mat4 = mat4.create();
         this.time = 0.0;
-        this.waveSpeed = 0.000025;
+        this.waveSpeed = 0.00005;
+        // Start loading
+        this.loading();
+    }
 
-        // Start shader loading
-        Shader.fromScripts(gl, "./water/shader.vert", "./water/shader.frag").then(shader => {
-            ///////// init ////////
-            this.shader = shader;
-            this.uniforms = shader.uniforms;
-            this.attributes = shader.generateAttributes();
-            mat4.mul(this.model, mat4.fromRotation(this.mat4, Math.PI / 2, [-1, 0, 0]), this.model);
-            mat4.mul(this.model, mat4.fromTranslation(this.mat4, [0, 0, 0]), this.model);
-            //////// build ////////
-            this.attributes.position.set(new Float32Array([
-              -1, 1, 0, // 0
-              -1,-1, 0, // 2
-               1, 1, 0, // 1
-              -1,-1, 0, // 2
-               1,-1, 0, // 3
-               1, 1, 0  // 1
-            ]));
-            /////// ready /////////
-            this.ready = true;
-        });
+    async loading() {
+        const gl = this.gl;
+        ///////// init ////////
+        this.shader = await Shader.fromScripts(gl, "./water/shader.vert", "./water/shader.frag");
+        this.uniforms = this.shader.uniforms;
+        this.attributes = this.shader.generateAttributes();
+        mat4.mul(this.model, mat4.fromRotation(this.mat4, Math.PI / 2, [-1, 0, 0]), this.model);
+        mat4.mul(this.model, mat4.fromTranslation(this.mat4, [0, 0, 0]), this.model);
+        //////// build ////////
+        this.attributes.position.set(new Float32Array([
+           -1, 1, 0, // 0
+           -1,-1, 0, // 2
+            1, 1, 0, // 1
+           -1,-1, 0, // 2
+            1,-1, 0, // 3
+            1, 1, 0  // 1
+        ]));
+        /////// ready /////////
+        this.ready = true;
     }
 
     enable(state = true) {
@@ -49,7 +51,6 @@ export default class WaterMesh {
             for(const attrib in this.attributes) {
                 this.attributes[attrib].enable();
             }
-            
         }
         else {
             this.reflectionTexture.unbind(0);
@@ -58,7 +59,9 @@ export default class WaterMesh {
         }
     }
 
-    render(camera) {
+    render(camera, pass) {
+        const gl = this.gl;
+        gl.cullFace(gl.BACK);
         this.enable(true);
         camera.loadProjectionMatrix(this.uniforms.projection);
         camera.loadViewMatrix(this.uniforms.view);
@@ -78,6 +81,7 @@ export default class WaterMesh {
     }
 
     dispose() {
+        this.shader.dispose();
         this.texture.dispose();
         for(const attrib in this.attributes) {
             this.attributes[attrib].dispose();

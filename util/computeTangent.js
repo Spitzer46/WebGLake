@@ -80,3 +80,80 @@ export function computeTangent(indices = [], vertices = [], uv = []) {
 
     return [ tangents, bitangents ];
 }
+
+export function computeTangentWithoutIndexes(vertices = [], uv = []) {
+    const tangents = new Float32Array(vertices.length);
+    const bitangents = new Float32Array(vertices.length);
+
+    const v0 = vec3.create();
+    const v1 = vec3.create();
+    const v2 = vec3.create();
+    const uv0 = vec2.create();
+    const uv1 = vec2.create();
+    const uv2 = vec2.create();
+    const deltaPos1 = vec3.create();
+    const deltaPos2 = vec3.create();
+    const deltaUv1 = vec2.create();
+    const deltaUv2 = vec2.create();
+    const right = vec3.create();
+    const left = vec3.create();
+    const tangent = vec3.create();
+    const bitangent = vec3.create();
+
+    for(let iv = 0, iuv = 0, l = vertices.length; iv < l; iv += 9, iuv += 6) {
+        vec3.set(v0, vertices[iv], vertices[iv+1], vertices[iv+2]);
+        vec3.set(v1, vertices[iv+3], vertices[iv+4], vertices[iv+5]);
+        vec3.set(v2, vertices[iv+6], vertices[iv+7], vertices[iv+8]);
+
+        vec2.set(uv0, uv[iuv], uv[iuv+1]);
+        vec2.set(uv1, uv[iuv+2], uv[iuv+3]);
+        vec2.set(uv2, uv[iuv+4], uv[iuv+5]);
+
+        vec3.sub(deltaPos1, v1, v0);
+        vec3.sub(deltaPos2, v2, v0);
+        vec2.sub(deltaUv1, uv1, uv0);
+        vec2.sub(deltaUv2, uv2, uv0);
+
+        const r = 1.0 / (deltaUv1[0] * deltaUv2[1] - deltaUv1[1] * deltaUv2[0]);
+        // Compute tangent
+        vec3.multiplyByScalar(left, deltaPos1, deltaUv2[1]);
+        vec3.multiplyByScalar(right, deltaPos2, deltaUv1[1]);
+        vec3.subtract(tangent, left, right);
+        vec3.multiplyByScalar(tangent, tangent, r);
+
+        // Compute bitantent
+        vec3.multiplyByScalar(left, deltaPos2, deltaUv1[0]);
+        vec3.multiplyByScalar(right, deltaPos1, deltaUv2[0]);
+        vec3.subtract(bitangent, left, right);
+        vec3.multiplyByScalar(bitangent, bitangent, r);
+
+        const tx = tangent[0];
+        const ty = tangent[1];
+        const tz = tangent[2];
+        const bx = bitangent[0];
+        const by = bitangent[1];
+        const bz = bitangent[2];
+
+        tangents[iv] = tx;
+        tangents[iv+1] = ty;
+        tangents[iv+2] = tz;
+        tangents[iv+3] = tx;
+        tangents[iv+4] = ty;
+        tangents[iv+5] = tz;
+        tangents[iv+6] = tx;
+        tangents[iv+7] = ty;
+        tangents[iv+8] = tz;
+
+        bitangents[iv] = bx;
+        bitangents[iv+1] = by;
+        bitangents[iv+2] = bz;
+        bitangents[iv+3] = bx;
+        bitangents[iv+4] = by;
+        bitangents[iv+5] = bz;
+        bitangents[iv+6] = bx;
+        bitangents[iv+7] = by;
+        bitangents[iv+8] = bz;
+    }
+
+    return [ tangents, bitangents ];
+}

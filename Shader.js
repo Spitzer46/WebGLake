@@ -98,7 +98,11 @@ export default class Shader {
     }
 
     enable() {
-        this.gl.useProgram(this.program);
+        const gl = this.gl;
+        if(gl.shaderUsed !== this.program) {
+            gl.useProgram(this.program);
+            gl.shaderUsed = this.program;
+        }        
     }
 
     dispose() {
