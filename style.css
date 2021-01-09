@@ -31,7 +31,7 @@ canvas {
   position: absolute;
   top: 5px;
   left: 5px;
-  color: white;
+  color: red;
   font-family: 'Roboto', sans-serif;
   z-index: 1;
 }

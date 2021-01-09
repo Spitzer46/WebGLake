@@ -12,7 +12,7 @@ export class SkyboxMesh {
         this.uniforms = null;
         this.attributes = null;
         this.elements = new Element(gl);
-        this.model = mat4.fromTranslation(mat4.create(), [0, -500, 0]);
+        this.model = mat4.fromTranslation(mat4.create(), [0, -400, 0]);
         this.textureCube = new TextureCubeMap(gl);
         // Start shader loading
         this.loading();
@@ -21,11 +21,11 @@ export class SkyboxMesh {
     async loading() {
         const gl = this.gl;
         ///////// init ////////
-        this.shader = await Shader.fromScripts(gl, "./skybox/shader.vert", "./skybox/shader.frag");
+        this.shader = await Shader.load(gl, "./skybox/shader.vert", "./skybox/shader.frag");
         this.uniforms = this.shader.uniforms;
         this.attributes = this.shader.generateAttributes();
         //////// build ////////
-        const s = 1200;
+        const s = 1000;
         this.attributes.position.set(new Float32Array([
             s, s, s,
             s, s,-s,
@@ -97,7 +97,7 @@ export class SkyboxMesh {
         }
     }
     
-    render(camera, pass) {
+    render(camera, light, pass) {
         const gl = this.gl;
         if(pass === 2) {
             gl.cullFace(gl.FRONT);
@@ -114,7 +114,7 @@ export class SkyboxMesh {
         this.enable(false);
     }
 
-    update(ellapsed) {
+    update(ellapsed, camera) {
         mat4.rotateY(this.model, this.model, ellapsed * 0.000015);
     }
 

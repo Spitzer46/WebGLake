@@ -1,4 +1,4 @@
-precision highp float;
+precision mediump float;
 
 attribute vec3 position;
 attribute vec2 uv;
@@ -10,13 +10,14 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 uniform vec4 plane;
+uniform vec3 lightPosition;
 
 varying vec2 vUv;
 varying mat3 vTbn;
 varying vec3 vSurfaceToLight;
 varying float vClipDistance;
 
-const vec3 lightPosition = vec3(-270.0, 300.0, -500.0);
+// const vec3 lightPosition = vec3(-270.0, 300.0, -500.0);
 
 void main() {
     vec4 worldPosition = model * vec4(position, 1.0);

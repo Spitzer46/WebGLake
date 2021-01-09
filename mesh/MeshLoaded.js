@@ -23,7 +23,7 @@ export default class MeshLoaded {
     async loading(objUrl) {
         const gl = this.gl;
         ///////// init ////////
-        this.shader = await Shader.fromScripts(gl, "./mesh/standart.vert", "./mesh/standart.frag");
+        this.shader = await Shader.load(gl, "./mesh/standart.vert", "./mesh/standart.frag");
         this.uniforms = this.shader.uniforms;
         this.attributes = this.shader.generateAttributes();
         //// load geometry ////
@@ -37,6 +37,7 @@ export default class MeshLoaded {
         this.attributes.bitangent.set(new Float32Array(bitangents));
         /////// ready /////////
         this.ready = true;
+        console.log(this);
     }
 
     enable(state = true)  {
@@ -54,24 +55,27 @@ export default class MeshLoaded {
         }
     }
 
-    render(camera, pass) {
+    render(camera, light, pass) {
         this.enable(true);
         const gl = this.gl;
         switch(pass) {
             case 0: // Reflection pass
                 gl.cullFace(gl.FRONT);
-                vec4.set(this.plane, 0, 1, 0, 0);
+                vec4.set(this.plane, 0, 1, 0, 0.1);
                 break;
             case 1: // Refraction pass
+                gl.cullFace(gl.BACK);
+                vec4.set(this.plane, 0, -1, 0, 2);
                 break;
             case 2: // Render pass
                 gl.cullFace(gl.BACK);
-                vec4.set(this.plane, 0, 0, 0, 0);
+                vec4.set(this.plane, 0, 1, 0, 0);
                 break;
             default:
         }
         camera.loadProjectionMatrix(this.uniforms.projection);
         camera.loadViewMatrix(this.uniforms.view);
+        light.loadLightPosition(this.uniforms.lightPosition);
         this.uniforms.model.set(this.model);
         this.uniforms.texture.set(0);
         this.uniforms.normalMap.set(1);
@@ -80,11 +84,12 @@ export default class MeshLoaded {
         this.enable(false);
     }
 
-    update(ellapsed) {}
+    update(ellapsed, camera) {}
 
     dispose() {
         this.shader.dispose();
         this.texture.dispose();
+        this.normalMap.dispose();
         for(const attrib in this.attributes) {
             this.attributes[attrib].dispose();
         }

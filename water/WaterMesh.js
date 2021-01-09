@@ -11,10 +11,13 @@ export default class WaterMesh {
         this.attributes = null;
         this.color = null;
         this.reflectionTexture = new Texture(gl, { width:1024, height:1024 });
+        this.refractionTexture = new Texture(gl, { width:512, height:512 });
         this.dudvTexture = Texture.load(gl, "../img/waterdudv.png", { wraps:gl.REPEAT, wrapt:gl.REPEAT });
         this.normalTexture = Texture.load(gl, "../img/waternormal.png", { wraps:gl.REPEAT, wrapt:gl.REPEAT });
-        this.model = mat4.fromScaling(mat4.create(), [160, 160, 160]);
+        this.model = mat4.fromScaling(mat4.create(), [155, 155, 155]);
         this.mat4 = mat4.create();
+        mat4.mul(this.model, mat4.fromRotation(this.mat4, Math.PI / 2, [-1, 0, 0]), this.model);
+        mat4.mul(this.model, mat4.fromTranslation(this.mat4, [0, 0, 0]), this.model);
         this.time = 0.0;
         this.waveSpeed = 0.00005;
         // Start loading
@@ -24,11 +27,9 @@ export default class WaterMesh {
     async loading() {
         const gl = this.gl;
         ///////// init ////////
-        this.shader = await Shader.fromScripts(gl, "./water/shader.vert", "./water/shader.frag");
+        this.shader = await Shader.load(gl, "./water/shader.vert", "./water/shader.frag");
         this.uniforms = this.shader.uniforms;
         this.attributes = this.shader.generateAttributes();
-        mat4.mul(this.model, mat4.fromRotation(this.mat4, Math.PI / 2, [-1, 0, 0]), this.model);
-        mat4.mul(this.model, mat4.fromTranslation(this.mat4, [0, 0, 0]), this.model);
         //////// build ////////
         this.attributes.position.set(new Float32Array([
            -1, 1, 0, // 0
@@ -48,6 +49,7 @@ export default class WaterMesh {
             this.reflectionTexture.bind(0);
             this.dudvTexture.bind(1);
             this.normalTexture.bind(2);
+            this.refractionTexture.bind(3);
             for(const attrib in this.attributes) {
                 this.attributes[attrib].enable();
             }
@@ -56,33 +58,39 @@ export default class WaterMesh {
             this.reflectionTexture.unbind(0);
             this.dudvTexture.unbind(1);
             this.normalTexture.unbind(2);
+            this.refractionTexture.unbind(3);
         }
     }
 
-    render(camera, pass) {
+    render(camera, light, pass) {
         const gl = this.gl;
         gl.cullFace(gl.BACK);
         this.enable(true);
         camera.loadProjectionMatrix(this.uniforms.projection);
         camera.loadViewMatrix(this.uniforms.view);
         camera.loadPositionVector(this.uniforms.cameraPosition);
+        light.loadLightPosition(this.uniforms.lightPosition);
         this.uniforms.model.set(this.model);
         this.uniforms.reflectionTexture.set(0);
         this.uniforms.dudvTexture.set(1);
         this.uniforms.normalTexture.set(2);
+        this.uniforms.refractionTexture.set(3);
         this.uniforms.time.set(this.time);
         this.gl.drawArrays(this.gl.TRIANGLES, 0, this.attributes.position.count);
         this.enable(false);
     }
 
-    update(ellapsed) {
+    update(ellapsed, camera) {
         this.time += ellapsed * this.waveSpeed;
         this.time %= 1;
     }
 
     dispose() {
         this.shader.dispose();
-        this.texture.dispose();
+        this.reflectionTexture.dispose();
+        this.dudvTexture.dispose();
+        this.normalTexture.dispose();
+        this.refractionTexture.dispose();
         for(const attrib in this.attributes) {
             this.attributes[attrib].dispose();
         }

@@ -6,10 +6,9 @@ export default class FrameBuffer {
         this.target = null;
     }
 
-    attachement(target, attachmentPoint) {
+    attachement(target, attachmentPoint = this.gl.COLOR_ATTACHMENT0) {
         const gl = this.gl;
         this.target = target;
-        attachmentPoint = attachmentPoint === undefined ? gl.COLOR_ATTACHMENT0 : attachmentPoint;
         // Attachement 0
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, target.texture, 0);

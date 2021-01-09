@@ -3,7 +3,7 @@ import Buffer from "./Buffer.js";
 import loadScript from "./util/loadScript.js";
 
 export default class Shader {
-    static async fromScripts(gl, vertexShaderUrl, fragShaderUrl) {
+    static async load(gl, vertexShaderUrl, fragShaderUrl) {
         const vertexShaderSrc = await loadScript(vertexShaderUrl);
         const fragShaderSrc = await loadScript(fragShaderUrl);
         return new Shader(gl, vertexShaderSrc, fragShaderSrc);

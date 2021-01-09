@@ -83,8 +83,12 @@ export default class Camera {
     }
 
     loadPositionVector(uniform) {
+        uniform.set(this.getPosition());
+    }
+
+    getPosition() {
         mat4.getTranslation(this.vec3, this.modelMatrix);
-        uniform.set(this.vec3);
+        return this.vec3;
     }
 
     onMouseMove(e) {
