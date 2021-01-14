@@ -1,6 +1,7 @@
 import Uniform from "./Uniform.js";
 import Buffer from "./Buffer.js";
 import loadScript from "./util/loadScript.js";
+import InstanciedBuffer from "./InstanciedBuffer.js";
 
 export default class Shader {
     static async load(gl, vertexShaderUrl, fragShaderUrl) {
@@ -29,7 +30,7 @@ export default class Shader {
         }
     }
 
-    generateAttributes() {
+    generateAttributes(options = {}, ext) {
         const gl = this.gl;
         const attributes = {};
         for (const [attribName, attribInfo] of Object.entries(this.attributeInfos)) {
@@ -45,9 +46,17 @@ export default class Shader {
                 case gl.BOOL_VEC2: type = gl.BOOL; size = 2; break;
                 case gl.BOOL_VEC3: type = gl.BOOL; size = 3; break;
                 case gl.BOOL_VEC4: type = gl.BOOL; size = 4; break;
+                case gl.FLOAT_MAT2: type = gl.FLOAT; size = 4; break;
+                case gl.FLOAT_MAT3: type = gl.FLOAT; size = 9; break;
+                case gl.FLOAT_MAT4: type = gl.FLOAT; size = 16; break;
                 default:
             }
-            attributes[attribName] = new Buffer(gl, this.program, attribName, gl.STATIC_DRAW, type, size, normalize);
+            if(options[attribName]?.instanced && ext) {
+                attributes[attribName] = new InstanciedBuffer(gl, ext, this.program, attribName, type, normalize);
+            }
+            else {
+                attributes[attribName] = new Buffer(gl, this.program, attribName, type, size, normalize);
+            }
         }
         return attributes;
     }

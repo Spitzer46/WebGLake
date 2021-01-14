@@ -36,12 +36,10 @@ export default class ParticleRenderer {
         this.attributes = this.shader.generateAttributes();
         //////// build ////////
         this.attributes.position.set(new Float32Array([
-            -1, 1, 0, // 0
-            -1,-1, 0, // 2
-             1, 1, 0, // 1
-            -1,-1, 0, // 2
-             1,-1, 0, // 3
-             1, 1, 0  // 1
+            1,-1,
+            1, 1,
+           -1,-1,
+           -1, 1
         ]));
         this.ready = true;
     }
@@ -59,13 +57,14 @@ export default class ParticleRenderer {
         }
         else {
             this.textureStar.unbind(0);
-            gl.enable(gl.DEPTH_TEST);
+            gl.disable(gl.BLEND);
             gl.depthMask(true);
         }
     }
 
     render(camera, light, pass) {
         const gl = this.gl;
+        gl.cullFace(gl.BACK);
         this.enable();
         camera.loadProjectionMatrix(this.uniforms.projection);
         for(const particleTextures of this.particleSystem.particleTextures) {
@@ -91,15 +90,15 @@ export default class ParticleRenderer {
                     this.modelMatrix[8] = camera.viewMatrix[2]; // 20 - 02
                     this.modelMatrix[9] = camera.viewMatrix[6]; // 21 - 12
                     this.modelMatrix[10] = camera.viewMatrix[10]; // 22 - 22
-                    mat4.rotate(this.modelMatrix, this.modelMatrix, particle.rotation,ParticleRenderer.zaxis);
+                    mat4.rotate(this.modelMatrix, this.modelMatrix, particle.rotation, ParticleRenderer.zaxis);
                     mat4.scale(this.modelMatrix, this.modelMatrix, particle.scale);
                     mat4.multiply(this.viewModelMatrix, camera.viewMatrix, this.modelMatrix);
                     this.uniforms.viewModel.set(this.viewModelMatrix);
                     this.uniforms.texOffset1.set(particle.texOffset1);
                     this.uniforms.texOffset2.set(particle.texOffset2);
-                    vec2.set(this.textInfo, particleTextures[0].numOfRows, particle.blendFactor);
+                    vec2.set(this.textInfo, texture.numOfRows, particle.blendFactor);
                     this.uniforms.textCoordInfo.set(this.textInfo);
-                    gl.drawArrays(gl.TRIANGLES, 0, this.attributes.position.count);
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.attributes.position.count);
                 }
             }
         }

@@ -1,9 +1,8 @@
 export default class Buffer {
-  constructor(gl, program, name, usage, type, size, normalize = false) {
+  constructor(gl, program, name, type, size, normalize = false) {
     this.gl = gl;
     this.loc = gl.getAttribLocation(program, name);
     this.buffer = gl.createBuffer();
-    this.usage = usage || gl.STATIC_DRAW;
     this.type = type || gl.FLOAT;
     this.size = size;
     this.normalize = normalize;
@@ -12,11 +11,11 @@ export default class Buffer {
     this.arrayLength = 0;
   }
 
-  set(data) {
+  set(data, usage = this.gl.STATIC_DRAW) {
     const gl = this.gl;
     const buffer = this.buffer;
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, data, this.usage);
+    gl.bufferData(gl.ARRAY_BUFFER, data, usage);
     this.arrayLength = data.length;
   }
 

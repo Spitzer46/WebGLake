@@ -16,7 +16,6 @@ export default class Uniform {
             case 0x1406: this.setter = (l, data) => gl.uniform1f(l, data); break;
             case 0x8B60: this.setter = (l, data) => gl.uniform1i(l, data); break;
             default:
-                console.log(type);
         }
     }
 

@@ -7,6 +7,7 @@ import MeshLoaded from "./mesh/MeshLoaded.js";
 import * as mat4 from "./lib/mat4.js";
 import Light from "./Light.js";
 import ParticleRenderer from "./particule/ParticleRenderer.js";
+import ParticleRendererFactory from "./particule/ParticleRendererFactory.js";
 
 const gl = Display.init({ alpha:true, antialias:false });
 gl.clearColor(0.95, 0.95, 0.95, 1.0);
@@ -30,10 +31,11 @@ const dune = new MeshLoaded(
   "../model/Desert/desert_normal.png");
 mat4.fromTranslation(dune.model, [0, -2, 0]);
 mat4.scale(dune.model, dune.model, [80, 80, 80]);
-const particleSystem = new ParticleRenderer(gl);
+// const particleSystem = new ParticleRenderer(gl);
+const particleSystem = ParticleRendererFactory(gl);
 reflectionFrameBuffer.attachement(water.reflectionTexture);
 refractionFrameBuffer.attachement(water.refractionTexture);
-reflectionPass.push(skyBox, dune);
+reflectionPass.push(skyBox, dune, particleSystem);
 refractionPass.push(dune);
 renderPass.push(skyBox, dune, water, particleSystem);
 
@@ -62,7 +64,7 @@ function animate(timestamp) {
 	camera.update(Display.width, Display.height);
 	for(const mesh of reflectionPass) {
 		if(mesh.ready) {
-		mesh.render(camera, sun, 0);
+			mesh.render(camera, sun, 0);
 		}
 	}
 	reflectionFrameBuffer.unbind();
@@ -73,7 +75,7 @@ function animate(timestamp) {
 	camera.update(Display.width, Display.height);
 	for(const mesh of refractionPass) {
 		if(mesh.ready) {
-		mesh.render(camera, sun, 1);
+			mesh.render(camera, sun, 1);
 		}
 	}
 	refractionFrameBuffer.unbind();

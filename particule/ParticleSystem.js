@@ -35,6 +35,7 @@ export default class ParticleSystem {
         this.rotation = ParticleSystem.defaultRotation;
         this.timestamp = 0;
         this.nextSpawn = 0;
+        this.numParticle = 0;
     }
 
     depthSortFunction(p1, p2) {
@@ -44,13 +45,20 @@ export default class ParticleSystem {
     update(ellapsed, camera) {
         this.timestamp += ellapsed;
         for(const particles of this.particles.values()) {
-            particles.sort(this.depthSortFunction);
+            // particles.sort(this.depthSortFunction);
             for(const particle of particles) {
                 if(particle.stillAlive) {
                     particle.update(ellapsed, camera); 
                 }
                 else if(this.timestamp > this.nextSpawn) {
-                    particle.reset(this.spawnPosition, this.deviation, this.spawnDeviation, this.lifeDecrease, this.lifeSpan, this.gravity, this.scale, this.rotation);
+                    particle.reset(this.spawnPosition, 
+                                   this.deviation, 
+                                   this.spawnDeviation, 
+                                   this.lifeDecrease, 
+                                   this.lifeSpan, 
+                                   this.gravity, 
+                                   this.scale, 
+                                   this.rotation);
                     this.nextSpawn = this.timestamp + this.spawnDelay;
                 }
             }
@@ -68,6 +76,7 @@ export default class ParticleSystem {
         }
 
         this.particles.set(particleTexture, particles);
+        this.numParticle += count;
     }
 
     setSpawnPosition(x = 0, y = 0, z = 0) {
@@ -76,5 +85,13 @@ export default class ParticleSystem {
 
     get particleTextures() {
         return this.particles.entries();
+    }
+
+    get maxParticleCount() {
+        let maxCount = 0;
+        for(const particles of this.particles.values()) {
+            maxCount = Math.max(particles.length, maxCount);
+        }
+        return maxCount;
     }
 }
