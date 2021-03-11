@@ -6,7 +6,6 @@ import FrameBuffer from "./FrameBuffer.js";
 import MeshLoaded from "./mesh/MeshLoaded.js";
 import * as mat4 from "./lib/mat4.js";
 import Light from "./Light.js";
-import ParticleRenderer from "./particule/ParticleRenderer.js";
 import ParticleRendererFactory from "./particule/ParticleRendererFactory.js";
 
 const gl = Display.init({ alpha:true, antialias:false });

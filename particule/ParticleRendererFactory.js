@@ -1,5 +1,5 @@
-import ParticleInstanciedRenderer from "./ParticleInstanciedRenderer.js";
-import ParticleRenderer from "./ParticleRenderer.js";
+import ParticleInstanciedRenderer from "./instancied/ParticleInstanciedRenderer.js";
+import ParticleRenderer from "./classic/ParticleRenderer.js";
 
 export default function(gl) {
     const instancedArraysExt = gl.getExtension('ANGLE_instanced_arrays');
@@ -7,5 +7,4 @@ export default function(gl) {
         return new ParticleInstanciedRenderer(gl, instancedArraysExt);
     }
     return new ParticleRenderer(gl);
-    // return new ParticleRenderer(gl);
 }

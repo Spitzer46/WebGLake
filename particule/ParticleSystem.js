@@ -38,14 +38,9 @@ export default class ParticleSystem {
         this.numParticle = 0;
     }
 
-    depthSortFunction(p1, p2) {
-        return p1.position[2] > p2.position[2];
-    }
-
     update(ellapsed, camera) {
         this.timestamp += ellapsed;
         for(const particles of this.particles.values()) {
-            // particles.sort(this.depthSortFunction);
             for(const particle of particles) {
                 if(particle.stillAlive) {
                     particle.update(ellapsed, camera); 

@@ -17,8 +17,6 @@ varying mat3 vTbn;
 varying vec3 vSurfaceToLight;
 varying float vClipDistance;
 
-// const vec3 lightPosition = vec3(-270.0, 300.0, -500.0);
-
 void main() {
     vec4 worldPosition = model * vec4(position, 1.0);
     gl_Position = projection * view * worldPosition;

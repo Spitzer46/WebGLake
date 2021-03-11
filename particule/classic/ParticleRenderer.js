@@ -1,10 +1,10 @@
-import * as mat4 from "../lib/mat4.js";
-import * as vec2 from "../lib/vec2.js";
-import Shader from "../Shader.js";
-import Texture from "../Texture.js";
-import { Particle } from "./Particle.js";
-import ParticleSystem from "./ParticleSystem.js";
-import ParticleTexture from "./ParticleTexture.js";
+import * as mat4 from "../../lib/mat4.js";
+import * as vec2 from "../../lib/vec2.js";
+import Shader from "../../Shader.js";
+import Texture from "../../Texture.js";
+import { Particle } from "../Particle.js";
+import ParticleSystem from "../ParticleSystem.js";
+import ParticleTexture from "../ParticleTexture.js";
 
 export default class ParticleRenderer {
     static zaxis = new Float32Array([0, 0, 1]);
@@ -31,7 +31,7 @@ export default class ParticleRenderer {
 
     async loading() {
         const gl = this.gl;
-        this.shader = await Shader.load(gl, "./particule/shader.vert", "./particule/shader.frag");
+        this.shader = await Shader.load(gl, "./particule/classic/shader.vert", "./particule/classic/shader.frag");
         this.uniforms = this.shader.uniforms;
         this.attributes = this.shader.generateAttributes();
         //////// build ////////

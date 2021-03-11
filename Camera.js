@@ -14,6 +14,7 @@ export default class Camera {
         this.modelMatrix = mat4.create();
         this.viewMatrix = mat4.create();
         this.motionlessViewMatrix = mat4.create();
+        this.rotationMatrix = mat4.create();
         this.vec3 = vec3.create();
         this.origin = vec3.create();
         vec3.set(this.origin, 0, 8, 0);
@@ -101,8 +102,10 @@ export default class Camera {
                 this.dy += this.my - this.py;
             }
             else if(this.mode === Mode.TRANSLATION) {
-                this.dtx += this.mx - this.ptx;
-                this.dty += this.my - this.pty;
+                vec3.set(this.vec3, this.mx - this.ptx, 0, this.my - this.pty);
+                vec3.transformMat4(this.vec3, this.vec3, this.rotationMatrix);
+                this.dtx += this.vec3[0];
+                this.dty += this.vec3[2];
             }
         }
         this.px = this.mx;
@@ -122,7 +125,7 @@ export default class Camera {
                 this.press = true;
                 break;
             case Button.RIGHT: 
-                this.mode = Mode.TRANSLATION; 
+                this.mode = Mode.TRANSLATION;
                 this.press = true;
                 break;
             default:
@@ -144,14 +147,16 @@ export default class Camera {
         // Translation
         this.etx += (this.dtx - this.etx) * this.factor;
         this.ety += (this.dty - this.ety) * this.factor;
-        const tx = (this.etx - halfWidth) / (width / 50);
-        const ty = (this.ety - halfHeight) / (height / 50);
+        const tx = (this.etx - halfWidth) / (width / 75);
+        const ty = (this.ety - halfHeight) / (height / 75);
         vec3.set(this.origin, tx, 0, ty);
 
         mat4.identity(this.modelMatrix);
         mat4.translate(this.modelMatrix, this.modelMatrix, this.origin);
-        mat4.rotateY(this.modelMatrix, this.modelMatrix, rx - Math.PI * 1.55);
-        mat4.rotateX(this.modelMatrix, this.modelMatrix, ry - Math.PI * 1.7);
+        mat4.identity(this.rotationMatrix);
+        mat4.rotateY(this.rotationMatrix, this.rotationMatrix, rx - Math.PI * 1.55);
+        mat4.rotateX(this.rotationMatrix, this.rotationMatrix, ry - Math.PI * 1.7);
+        mat4.mul(this.modelMatrix, this.modelMatrix, this.rotationMatrix);
         vec3.set(this.vec3, 0, 0, this.zoom);
         mat4.translate(this.modelMatrix, this.modelMatrix, this.vec3);
         // Update matrix

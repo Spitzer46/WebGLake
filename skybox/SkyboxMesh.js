@@ -71,12 +71,18 @@ export class SkyboxMesh {
         this.ready = true;
         // Start image loadings
         const promiseImages = [];
-        promiseImages.push(loadImage("../img/daylight/front.bmp", gl.TEXTURE_CUBE_MAP_POSITIVE_Z));
-        promiseImages.push(loadImage("../img/daylight/back.bmp", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z));
-        promiseImages.push(loadImage("../img/daylight/right.bmp", gl.TEXTURE_CUBE_MAP_POSITIVE_X));
-        promiseImages.push(loadImage("../img/daylight/left.bmp", gl.TEXTURE_CUBE_MAP_NEGATIVE_X));
-        promiseImages.push(loadImage("../img/daylight/top.bmp", gl.TEXTURE_CUBE_MAP_POSITIVE_Y));
-        promiseImages.push(loadImage("../img/daylight/bottom.bmp", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y));
+        // promiseImages.push(loadImage("../img/daylight/front.bmp", gl.TEXTURE_CUBE_MAP_POSITIVE_Z));
+        // promiseImages.push(loadImage("../img/daylight/back.bmp", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z));
+        // promiseImages.push(loadImage("../img/daylight/right.bmp", gl.TEXTURE_CUBE_MAP_POSITIVE_X));
+        // promiseImages.push(loadImage("../img/daylight/left.bmp", gl.TEXTURE_CUBE_MAP_NEGATIVE_X));
+        // promiseImages.push(loadImage("../img/daylight/top.bmp", gl.TEXTURE_CUBE_MAP_POSITIVE_Y));
+        // promiseImages.push(loadImage("../img/daylight/bottom.bmp", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y));
+        promiseImages.push(loadImage("../img/dayskybox/front.png", gl.TEXTURE_CUBE_MAP_NEGATIVE_Z));
+        promiseImages.push(loadImage("../img/dayskybox/back.png", gl.TEXTURE_CUBE_MAP_POSITIVE_Z));
+        promiseImages.push(loadImage("../img/dayskybox/right.png", gl.TEXTURE_CUBE_MAP_POSITIVE_X));
+        promiseImages.push(loadImage("../img/dayskybox/left.png", gl.TEXTURE_CUBE_MAP_NEGATIVE_X));
+        promiseImages.push(loadImage("../img/dayskybox/top.png", gl.TEXTURE_CUBE_MAP_POSITIVE_Y));
+        promiseImages.push(loadImage("../img/dayskybox/bottom.png", gl.TEXTURE_CUBE_MAP_NEGATIVE_Y));
         const imagesLoaded = await Promise.all(promiseImages);
         this.textureCube.set(imagesLoaded.map(il => {
             return { target:il.args[0], data:il.img }

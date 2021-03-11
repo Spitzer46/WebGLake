@@ -37,7 +37,6 @@ export default class MeshLoaded {
         this.attributes.bitangent.set(new Float32Array(bitangents));
         /////// ready /////////
         this.ready = true;
-        console.log(this);
     }
 
     enable(state = true)  {

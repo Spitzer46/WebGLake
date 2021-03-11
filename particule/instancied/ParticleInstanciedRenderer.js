@@ -1,10 +1,10 @@
-import Shader from "../Shader.js";
-import Texture from "../Texture.js";
-import { Particle } from "./Particle.js";
-import ParticleSystem from "./ParticleSystem.js";
-import ParticleTexture from "./ParticleTexture.js";
-import * as mat4 from "../lib/mat4.js";
-import * as vec2 from "../lib/vec2.js";
+import Shader from "../../Shader.js";
+import Texture from "../../Texture.js";
+import { Particle } from "../Particle.js";
+import ParticleSystem from "../ParticleSystem.js";
+import ParticleTexture from "../ParticleTexture.js";
+import * as mat4 from "../../lib/mat4.js";
+import * as vec2 from "../../lib/vec2.js";
 
 export default class ParticleInstanciedRenderer {
     static zaxis = new Float32Array([0, 0, 1]);
@@ -48,7 +48,7 @@ export default class ParticleInstanciedRenderer {
 
     async loading() {
         const gl = this.gl;
-        this.shader = await Shader.load(gl, "./particule/instanciedshader.vert", "./particule/instanciedshader.frag");
+        this.shader = await Shader.load(gl, "./particule/instancied/shader.vert", "./particule/instancied/shader.frag");
         this.uniforms = this.shader.uniforms;
         this.attributes = this.shader.generateAttributes(ParticleInstanciedRenderer.optionAttributes, this.ext);
         //////// build ////////
@@ -105,7 +105,6 @@ export default class ParticleInstanciedRenderer {
         this.enable();
         camera.loadProjectionMatrix(this.uniforms.projection);
         // Update data
-        let instance = 0;
         for(const particleTextures of this.particleSystem.particleTextures) {
             const texture = particleTextures[0];
             const particules = particleTextures[1];
@@ -116,6 +115,7 @@ export default class ParticleInstanciedRenderer {
             else {
                 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             }
+            let instance = 0;
             for(const particle of particules) {
                 if(particle.stillAlive) {
                     // Set model matrix
